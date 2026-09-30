@@ -1,4 +1,4 @@
-openapi: 3.1.0
+git openapi: 3.1.0
 info:
   title: VLR Backend
   version: 0.1.0
