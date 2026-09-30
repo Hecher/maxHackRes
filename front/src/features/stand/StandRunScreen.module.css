@@ -1,0 +1,156 @@
+.panel {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-2);
+  padding: var(--card-pad);
+  background: var(--background-primary);
+  border-top: 1px solid var(--divider-secondary);
+}
+
+.panelToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-2);
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: 0 var(--gap-1);
+  border: 0;
+  background: none;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.panelToggleText {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--gap-2);
+}
+
+.panelToggleCount {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.panelChevron {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  transition: transform var(--dur-fast) var(--ease);
+}
+
+.panelChevronOpen {
+  transform: rotate(180deg);
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-3);
+
+  max-height: 40dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-right: var(--gap-1);
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-1);
+}
+
+.controlHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gap-2);
+}
+
+.controlValue {
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.range {
+  width: 100%;
+  accent-color: var(--max-color-primary, #2c6bff);
+}
+
+.paramNumber {
+  width: 100%;
+  max-width: 140px;
+  padding: 8px 10px;
+  border: 1px solid var(--divider-secondary);
+  border-radius: var(--radius-sm);
+  background: var(--background-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-2);
+}
+
+.journal {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-2);
+  padding: var(--card-pad);
+  background: var(--background-secondary);
+  border-top: 1px solid var(--divider-secondary);
+}
+
+.journalTitle {
+  color: var(--text-tertiary);
+}
+
+.hint {
+  color: var(--text-secondary);
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th,
+.table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--divider-secondary);
+  white-space: nowrap;
+}
+
+.table th {
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+
+.unit {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.cell {
+  width: 72px;
+  padding: 6px 8px;
+  border: 1px solid var(--divider-secondary);
+  border-radius: var(--radius-sm);
+  background: var(--background-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+}

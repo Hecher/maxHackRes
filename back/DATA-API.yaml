@@ -1,0 +1,725 @@
+# DATA-API: контракт проверки решения для платформы оценки.
+#
+# Файл описывает, какие методы бэкенда считаются основной функциональностью,
+# под какой ролью их вызывать и что считается успешным ответом.
+# Полная схема всех методов и моделей — в openapi.yaml (генерируется
+# скриптом scripts/export_openapi.py из самого приложения FastAPI).
+
+config_version: "1.0"
+
+solution:
+  name: "Виртуальные лабораторные работы (maxHack)"
+  team_id: "maxHack-vlr"
+  repository: "https://github.com/Hecher/maxHack"
+  description: >-
+    Мини-приложение MAX для школьных лабораторных работ: учитель собирает стенд из
+    приборов, настраивает журнал замеров и выдаёт работу классу; ученик проводит
+    опыт, заполняет расчёты и отправляет работу на проверку.
+
+api:
+  base_url: "https://maxvrl.virtuallabkruto2003.ru/api/v1"
+  docs_url: "https://maxvrl.virtuallabkruto2003.ru/api/v1/docs"
+  openapi_url: "https://maxvrl.virtuallabkruto2003.ru/api/v1/openapi.json"
+  schema_file: "openapi.yaml"
+  protocol: "HTTPS"
+  content_type: "application/json"
+  authorization:
+    type: "Bearer"
+    header: "Authorization"
+    description: >-
+      Токен выдаётся методом POST /auth/ (подпись initData от MAX) или
+      POST /auth/dev-login при DEBUG=true. Для методов скачивания файлов токен
+      дополнительно принимается query-параметром token.
+
+# Роли тестовых учётных записей, которые нужны для проверок.
+roles:
+  anonymous:
+    description: "Без токена — проверка закрытости методов."
+  student:
+    description: "Ученик: проходит работы и сдаёт журнал."
+    how_to_get: "POST /auth/ с initData ученика либо POST /auth/dev-login при DEBUG=true"
+  teacher:
+    description: "Учитель: создаёт работы, выдаёт классам, проверяет сдачи."
+    how_to_get: "POST /auth/dev-login при DEBUG=true либо роль teacher в боте MAX"
+
+# Общие ожидания по формату ответа.
+response_conventions:
+  content_type: "application/json"
+  errors:
+    description: "Ошибки возвращаются как {\"detail\": \"<текст>\"}."
+    schema:
+      detail: "string"
+  datetime_format: "ISO 8601, UTC (например 2026-09-29T18:57:58.123456Z)"
+
+# Перечень обязательных проверок (основная функциональность).
+# verify: true — проверка входит в обязательный набор.
+required_checks:
+  - id: "auth-init-data"
+    title: "Вход по подписи MAX"
+    verify: true
+  - id: "auth-closed-by-default"
+    title: "Dev-логин закрыт при DEBUG=false"
+    verify: true
+  - id: "auth-me"
+    title: "Профиль текущего пользователя"
+    verify: true
+  - id: "labs-list"
+    title: "Каталог доступных работ"
+    verify: true
+  - id: "labs-create"
+    title: "Создание работы учителем"
+    verify: true
+  - id: "labs-read"
+    title: "Чтение работы с проверкой доступа"
+    verify: true
+  - id: "labs-assign"
+    title: "Выдача работы классам"
+    verify: true
+  - id: "labs-guide"
+    title: "Скачивание методички"
+    verify: true
+  - id: "classrooms"
+    title: "Классы учителя"
+    verify: true
+  - id: "attempts-lifecycle"
+    title: "Попытка: старт → завершение → проверка"
+    verify: true
+  - id: "attempts-export"
+    title: "Экспорт журнала в Excel"
+    verify: true
+  - id: "attempts-delete"
+    title: "Удаление своей попытки"
+    verify: false
+  - id: "links"
+    title: "Связь учитель — ученик"
+    verify: false
+  - id: "components"
+    title: "Пользовательские компоненты"
+    verify: false
+
+# Описание методов: путь относительно base_url.
+endpoints:
+  - id: "auth-login"
+    check: "auth-init-data"
+    method: "POST"
+    path: "/auth/"
+    summary: "Вход по initData мини-приложения MAX"
+    role: "anonymous"
+    verified: true
+    request:
+      headers:
+        Content-Type: "application/json"
+      body:
+        required: true
+        schema:
+          initData: "string — подписанные данные из MAX"
+          role: "'student' | 'teacher', по умолчанию student"
+        example:
+          initData: "auth_date=1700000000&hash=<hmac>&user=%7B%22id%22%3A42%7D"
+          role: "student"
+    responses:
+      "200":
+        description: "Токен выдан"
+        schema:
+          access_token: "string"
+          token_type: "bearer"
+          is_new_user: "boolean"
+          user:
+            id: "integer"
+            max_user_id: "integer"
+            full_name: "string"
+            role: "'student' | 'teacher'"
+      "401":
+        description: "Подпись неверна, нет hash или auth_date старше 24 часов"
+      "422":
+        description: "Тело запроса не прошло валидацию (например role не из списка)"
+
+  - id: "auth-dev-login"
+    check: "auth-closed-by-default"
+    method: "POST"
+    path: "/auth/dev-login"
+    summary: "Вход без подписи — только для разработки"
+    role: "anonymous"
+    verified: true
+    request:
+      headers:
+        Content-Type: "application/json"
+      body:
+        required: false
+        schema:
+          max_user_id: "integer"
+          role: "'student' | 'teacher'"
+    responses:
+      "200":
+        description: "Токен выдан (только при DEBUG=true)"
+      "403":
+        description: "Ожидаемый ответ на боевом стенде: DEBUG=false"
+
+  - id: "auth-me"
+    check: "auth-me"
+    method: "PATCH"
+    path: "/auth/me"
+    summary: "Обновление профиля"
+    role: "student|teacher"
+    verified: true
+    request:
+      headers:
+        Authorization: "Bearer <token>"
+      body:
+        required: true
+        schema:
+          full_name: "string?"
+          city: "string?"
+          school: "string?"
+          class_number: "integer?"
+          subject: "string?"
+        example:
+          school: "МАОУ СОШ № 27"
+          class_number: 8
+    responses:
+      "200":
+        description: "Профиль обновлён"
+        schema:
+          id: "integer"
+          max_user_id: "integer"
+          full_name: "string"
+          role: "string"
+          school: "string?"
+          class_number: "integer?"
+      "401":
+        description: "Нет или просрочен токен"
+
+  - id: "labs-list"
+    check: "labs-list"
+    method: "GET"
+    path: "/labs/"
+    summary: "Каталог работ: публичные, свои и выданные классу"
+    role: "student|teacher"
+    verified: true
+    request:
+      headers:
+        Authorization: "Bearer <token>"
+      query: {}
+    responses:
+      "200":
+        description: "Массив работ"
+        schema: "array<Lab>"
+        required_fields:
+          - "id"
+          - "author_id"
+          - "title"
+          - "visibility"
+          - "math_model"
+          - "created_at"
+      "401":
+        description: "Нет токена"
+
+  - id: "labs-create"
+    check: "labs-create"
+    method: "POST"
+    path: "/labs/"
+    summary: "Создание работы (только учитель)"
+    role: "teacher"
+    verified: true
+    request:
+      headers:
+        Authorization: "Bearer <token>"
+      body:
+        required: true
+        schema:
+          title: "string"
+          subject: "string?"
+          summary: "string?"
+          goal: "string?"
+          guide: "string?"
+          guide_file: "string?"
+          guide_file_name: "string?"
+          visibility: "'public' | 'private'"
+          math_model: "object — стенд и журнал работы"
+          journal_columns: "array<object>"
+          assigned_class_ids: "array<string>"
+          noise_percent: "number?"
+          max_rows: "integer?"
+          is_published: "boolean"
+        example:
+          title: "Закон Ома"
+          visibility: "public"
+          math_model:
+            version: 2
+            stand:
+              components: []
+              links: []
+            journal: []
+    responses:
+      "201":
+        description: "Работа создана"
+        schema: "Lab"
+        required_fields: ["id", "author_id", "title", "math_model", "created_at"]
+      "401":
+        description: "Нет токена"
+      "403":
+        description: "Роль не teacher"
+      "422":
+        description: "Нет обязательного поля math_model или title"
+
+  - id: "labs-read"
+    check: "labs-read"
+    method: "GET"
+    path: "/labs/{lab_id}"
+    summary: "Работа по идентификатору"
+    role: "student|teacher"
+    verified: true
+    request:
+      headers:
+        Authorization: "Bearer <token>"
+      path:
+        lab_id: "integer"
+    responses:
+      "200":
+        description: "Работа доступна этому пользователю"
+        schema: "Lab"
+      "401":
+        description: "Нет токена"
+      "403":
+        description: "Работа другого учителя или не выдана этому классу"
+      "404":
+        description: "Работы с таким id нет"
+
+  - id: "labs-assign"
+    check: "labs-assign"
+    method: "POST"
+    path: "/labs/{lab_id}/assign"
+    summary: "Выдать работу классам"
+    role: "teacher"
+    verified: true
+    request:
+      headers:
+        Authorization: "Bearer <token>"
+      path:
+        lab_id: "integer"
+      body:
+        required: true
+        schema:
+          classroom_ids: "array<integer>"
+    responses:
+      "200":
+        description: "Работа выдана, возвращена с assigned_class_ids"
+        schema: "Lab"
+      "403":
+        description: "Работа другого учителя или класс из другой школы"
+      "404":
+        description: "Работы нет"
+
+  - id: "labs-guide"
+    check: "labs-guide"
+    method: "GET"
+    path: "/labs/{lab_id}/guide"
+    summary: "Файл методички"
+    role: "student|teacher"
+    verified: true
+    request:
+      path:
+        lab_id: "integer"
+      query:
+        token: "string — токен, если файл открывается ссылкой"
+      headers:
+        Authorization: "Bearer <token>"
+    responses:
+      "200":
+        description: "Файл отдан (application/octet-stream или data-URL MIME)"
+      "403":
+        description: "Работа не выдана этому пользователю"
+      "404":
+        description: "Работы нет или методичка не приложена"
+
+  - id: "classrooms-list"
+    check: "classrooms"
+    method: "GET"
+    path: "/classrooms/"
+    summary: "Классы учителя"
+    role: "teacher"
+    verified: true
+    request:
+      headers:
+        Authorization: "Bearer <token>"
+    responses:
+      "200":
+        description: "Массив классов"
+        schema: "array<Classroom>"
+        required_fields: ["id", "school", "grade", "label", "students_count"]
+      "403":
+        description: "Роль не teacher"
+
+  - id: "classrooms-create"
+    check: "classrooms"
+    method: "POST"
+    path: "/classrooms/"
+    summary: "Создать класс"
+    role: "teacher"
+    verified: false
+    request:
+      headers:
+        Authorization: "Bearer <token>"
+      body:
+        required: true
+        schema:
+          school: "string?"
+          grade: "integer 1..11"
+    responses:
+      "201":
+        description: "Класс создан"
+        schema: "Classroom"
+      "400":
+        description: "Не указана школа или номер класса вне 1..11"
+      "403":
+        description: "Роль не teacher"
+
+  - id: "classrooms-advance-year"
+    check: "classrooms"
+    method: "POST"
+    path: "/classrooms/advance-year"
+    summary: "Перевести классы школы на следующий год"
+    role: "teacher"
+    verified: false
+    request:
+      headers:
+        Authorization: "Bearer <token>"
+    responses:
+      "200":
+        description: "Список оставшихся классов"
+        schema: "array<Classroom>"
+      "400":
+        description: "В профиле учителя нет школы"
+
+  - id: "attempts-create"
+    check: "attempts-lifecycle"
+    method: "POST"
+    path: "/attempts/"
+    summary: "Начать выполнение работы"
+    role: "student"
+    verified: true
+    request:
+      headers:
+        Authorization: "Bearer <token>"
+      body:
+        required: true
+        schema:
+          lab_id: "integer"
+          mode: "'test' | 'work'"
+        example:
+          lab_id: 1
+          mode: "work"
+    responses:
+      "200":
+        description: "Попытка создана"
+        schema:
+          id: "integer"
+          student_id: "integer"
+          lab_id: "integer"
+          mode: "string"
+          status: "'in_progress'"
+          started_at: "datetime"
+      "403":
+        description: "Работа не выдана этому ученику"
+      "404":
+        description: "Работы нет"
+
+  - id: "attempts-finish"
+    check: "attempts-lifecycle"
+    method: "POST"
+    path: "/attempts/{attempt_id}/finish"
+    summary: "Завершить попытку и отправить журнал"
+    role: "student"
+    verified: true
+    request:
+      headers:
+        Authorization: "Bearer <token>"
+      path:
+        attempt_id: "integer"
+      body:
+        required: true
+        schema:
+          result_data:
+            measurements: "array<{step, inputs, outputs}>"
+            answers:
+              rows: "array<object>"
+              columns: "array<object>"
+              conclusion: "string"
+            client_metrics: "object"
+          comment: "string?"
+        example:
+          result_data:
+            measurements: []
+            answers:
+              rows: []
+              columns: []
+              conclusion: "Сопротивление растёт"
+    responses:
+      "200":
+        description: "Попытка завершена, оценка не выставляется учеником"
+        schema:
+          id: "integer"
+          status: "'finished'"
+          grade: "integer|null"
+          finished_at: "datetime"
+      "403":
+        description: "Чужая попытка"
+      "404":
+        description: "Попытки нет"
+
+  - id: "attempts-list"
+    check: "attempts-lifecycle"
+    method: "GET"
+    path: "/attempts/"
+    summary: "Список сдач: ученик видит свои, учитель — по своим работам"
+    role: "student|teacher"
+    verified: true
+    request:
+      headers:
+        Authorization: "Bearer <token>"
+    responses:
+      "200":
+        description: "Массив сдач"
+        schema: "array<AttemptListItem>"
+        required_fields: ["id", "student_id", "lab_id", "mode", "status", "started_at", "lab_title", "student_name"]
+      "401":
+        description: "Нет токена"
+
+  - id: "attempts-review"
+    check: "attempts-lifecycle"
+    method: "POST"
+    path: "/attempts/{attempt_id}/review"
+    summary: "Оценка и комментарий учителя"
+    role: "teacher"
+    verified: true
+    request:
+      headers:
+        Authorization: "Bearer <token>"
+      path:
+        attempt_id: "integer"
+      body:
+        required: true
+        schema:
+          grade: "integer?"
+          comment: "string?"
+        example:
+          grade: 5
+          comment: "Расчёт верный"
+    responses:
+      "200":
+        description: "Оценка выставлена"
+        schema:
+          id: "integer"
+          grade: "integer"
+          comment: "string|null"
+      "403":
+        description: "Работа другого учителя"
+      "404":
+        description: "Попытки нет"
+
+  - id: "attempts-export"
+    check: "attempts-export"
+    method: "GET"
+    path: "/attempts/{attempt_id}/export.xls"
+    summary: "Журнал замеров файлом Excel"
+    role: "student|teacher"
+    verified: true
+    request:
+      path:
+        attempt_id: "integer"
+      query:
+        token: "string — токен, если файл открывается ссылкой"
+      headers:
+        Authorization: "Bearer <token>"
+    responses:
+      "200":
+        description: "Файл XML-таблицы (application/vnd.ms-excel)"
+      "403":
+        description: "Чужая попытка или работа другого учителя"
+      "404":
+        description: "Попытки или работы нет"
+
+  - id: "attempts-delete"
+    check: "attempts-delete"
+    method: "DELETE"
+    path: "/attempts/{attempt_id}"
+    summary: "Удалить попытку (свою или по своей работе)"
+    role: "student|teacher"
+    verified: false
+    request:
+      headers:
+        Authorization: "Bearer <token>"
+      path:
+        attempt_id: "integer"
+    responses:
+      "204":
+        description: "Удалено, тела ответа нет"
+      "403":
+        description: "Чужая попытка и не своя работа"
+      "404":
+        description: "Попытки нет"
+
+  - id: "links-list"
+    check: "links"
+    method: "GET"
+    path: "/links/"
+    summary: "Ученики, связанные с учителем"
+    role: "teacher"
+    verified: false
+    request:
+      headers:
+        Authorization: "Bearer <token>"
+    responses:
+      "200":
+        description: "Массив связей"
+        schema: "array<LinkResponse>"
+        required_fields: ["student_id", "max_user_id", "full_name"]
+      "403":
+        description: "Роль не teacher"
+
+  - id: "links-create"
+    check: "links"
+    method: "POST"
+    path: "/links/"
+    summary: "Связать ученика с учителем"
+    role: "teacher"
+    verified: false
+    request:
+      headers:
+        Authorization: "Bearer <token>"
+      body:
+        required: true
+        schema:
+          student_max_user_id: "integer"
+    responses:
+      "201":
+        description: "Связь создана"
+        schema: "LinkResponse"
+      "400":
+        description: "Указанный пользователь не ученик"
+      "404":
+        description: "Ученик с таким MAX ID не найден"
+      "409":
+        description: "Связь уже существует"
+
+  - id: "components-list"
+    check: "components"
+    method: "GET"
+    path: "/components/"
+    summary: "Пользовательские компоненты"
+    role: "student|teacher"
+    verified: false
+    request:
+      headers:
+        Authorization: "Bearer <token>"
+    responses:
+      "200":
+        description: "Массив компонентов"
+        schema: "array<Component>"
+        required_fields: ["id", "name", "graph", "created_at"]
+
+  - id: "components-create"
+    check: "components"
+    method: "POST"
+    path: "/components/"
+    summary: "Создать компонент"
+    role: "student|teacher"
+    verified: false
+    request:
+      headers:
+        Authorization: "Bearer <token>"
+      body:
+        required: true
+        schema:
+          name: "string"
+          graph: "object"
+    responses:
+      "201":
+        description: "Компонент создан"
+        schema: "Component"
+      "401":
+        description: "Нет токена"
+
+  - id: "components-delete"
+    check: "components"
+    method: "DELETE"
+    path: "/components/{component_id}"
+    summary: "Удалить компонент"
+    role: "student|teacher"
+    verified: false
+    request:
+      headers:
+        Authorization: "Bearer <token>"
+      path:
+        component_id: "integer"
+    responses:
+      "204":
+        description: "Удалено"
+      "404":
+        description: "Компонента нет"
+
+# Порядок сквозной проверки основной функциональности.
+scenario:
+  - id: "step-1"
+    title: "Учитель входит и получает токен"
+    endpoint: "auth-login"
+    role: "teacher"
+  - id: "step-2"
+    title: "Учитель создаёт работу со стендом"
+    endpoint: "labs-create"
+    role: "teacher"
+  - id: "step-3"
+    title: "Учитель выдаёт работу классу"
+    endpoint: "labs-assign"
+    role: "teacher"
+  - id: "step-4"
+    title: "Ученик видит работу в каталоге"
+    endpoint: "labs-list"
+    role: "student"
+  - id: "step-5"
+    title: "Ученик открывает работу и начинает попытку"
+    endpoint: "attempts-create"
+    role: "student"
+  - id: "step-6"
+    title: "Ученик завершает попытку с журналом"
+    endpoint: "attempts-finish"
+    role: "student"
+  - id: "step-7"
+    title: "Учитель видит сдачу"
+    endpoint: "attempts-list"
+    role: "teacher"
+  - id: "step-8"
+    title: "Учитель проверяет и ставит оценку"
+    endpoint: "attempts-review"
+    role: "teacher"
+  - id: "step-9"
+    title: "Журнал выгружается файлом"
+    endpoint: "attempts-export"
+    role: "teacher"
+
+# Проверки безопасности, которые платформа может прогнать отдельно.
+security_expectations:
+  - id: "no-token"
+    description: "Любой метод кроме /auth/ и /auth/dev-login без токена отдаёт 401."
+    endpoints: ["labs-list", "labs-read", "attempts-list", "classrooms-list"]
+    expected_status: 401
+  - id: "student-cannot-create-lab"
+    description: "Ученик не может создать работу."
+    endpoint: "labs-create"
+    role: "student"
+    expected_status: 403
+  - id: "foreign-private-lab"
+    description: "Ученик не читает чужую приватную работу."
+    endpoint: "labs-read"
+    role: "student"
+    expected_status: 403
+  - id: "student-cannot-grade"
+    description: "Оценка выставляется только методом review под ролью учителя."
+    endpoint: "attempts-review"
+    role: "student"
+    expected_status: 403
+  - id: "dev-login-closed"
+    description: "На боевом стенде dev-логин закрыт."
+    endpoint: "auth-dev-login"
+    role: "anonymous"
+    expected_status: 403

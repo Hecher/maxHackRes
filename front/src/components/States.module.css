@@ -1,0 +1,45 @@
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 48px 28px;
+  text-align: center;
+}
+
+.stateIcon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--background-tertiary);
+  color: var(--text-tertiary);
+}
+
+.stateError .stateIcon {
+  color: var(--text-negative);
+}
+
+.stateTitle {
+  color: var(--text-primary);
+}
+
+.stateText {
+  color: var(--text-secondary);
+  max-width: 34ch;
+  line-height: 1.4;
+}
+
+.stateAction {
+  margin-top: 6px;
+}
+
+.inlineSpinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px 16px;
+  color: var(--text-secondary);
+}

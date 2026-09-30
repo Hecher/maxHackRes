@@ -1,0 +1,112 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--background-secondary);
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--gap-4) var(--screen-x) var(--gap-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+}
+
+.header {
+  flex-shrink: 0;
+  padding-top: var(--app-safe-top);
+  background: var(--background-primary);
+  border-bottom: 1px solid var(--divider-secondary);
+  z-index: 20;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-1);
+  min-height: var(--header-h);
+  padding: 0 var(--gap-2) 0 var(--gap-1);
+}
+
+.headerText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+}
+
+.headerTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+.headerSubtitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-tertiary);
+}
+
+.headerAction {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-1);
+  flex-shrink: 0;
+}
+
+.tabbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: stretch;
+  background: var(--background-primary);
+  border-top: 1px solid var(--divider-secondary);
+  padding-bottom: var(--app-safe-bottom);
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: var(--tabbar-h);
+  border: 0;
+  background: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.tabActive {
+  color: var(--text-themed);
+}
+
+.tabLabel {
+  font-size: 11px;
+  line-height: 1;
+}
+
+.sectionTitle {
+  padding: var(--gap-2) var(--gap-1) 0;
+  color: var(--text-secondary);
+}

@@ -1,0 +1,44 @@
+.chart {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius-sm);
+  background: var(--lab-paper);
+  border: 1px solid var(--lab-paper-edge);
+}
+
+.grid {
+  stroke: var(--lab-grid-strong);
+  stroke-width: 1;
+}
+
+.axis {
+  stroke: var(--lab-wire);
+  stroke-width: 1.4;
+}
+
+.curve {
+  fill: none;
+  stroke: var(--lab-needle);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.point {
+  fill: var(--lab-scale-face);
+  stroke: var(--text-themed);
+  stroke-width: 2;
+}
+
+.tick {
+  fill: var(--text-tertiary);
+  font-family: var(--family-base, system-ui, sans-serif);
+  font-size: 9px;
+}
+
+.label {
+  fill: var(--text-secondary);
+  font-family: var(--family-base, system-ui, sans-serif);
+  font-size: 10px;
+  font-weight: 600;
+}

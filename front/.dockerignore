@@ -1,0 +1,19 @@
+node_modules
+dist
+.smoke
+.smoke-profile
+.git
+.gitignore
+*.md
+!README.md
+*.pdf
+*.pdf.txt
+*.png
+*.jpg
+# Патч бэкенда в образ не нужен — он применяется в его репозитории.
+*.patch
+.env
+.env.*
+!.env.example
+Dockerfile
+compose.yaml

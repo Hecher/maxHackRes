@@ -1,0 +1,130 @@
+.toolbar {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-2);
+  padding: var(--gap-3) var(--screen-x) var(--gap-2);
+  background: var(--background-secondary);
+}
+
+.queued {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-3);
+  padding: var(--gap-3) var(--gap-4);
+  border-radius: var(--radius-md);
+  background: var(--background-primary);
+  border: 1px solid var(--divider-secondary);
+}
+
+.queuedText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-1);
+}
+
+.queuedHint {
+  color: var(--text-tertiary);
+  line-height: 1.35;
+}
+
+.list {
+  background: var(--background-primary);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.list > * + * {
+  border-top: 1px solid var(--divider-secondary);
+}
+
+.demo {
+  padding: var(--gap-3);
+  border-radius: var(--radius-md);
+  background: var(--background-primary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-1);
+}
+
+.demoTitle {
+  color: var(--text-themed);
+}
+
+.demoText {
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.modeList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-2);
+}
+
+.modeCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-1);
+  width: 100%;
+  min-height: 64px;
+  padding: var(--gap-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--divider-secondary);
+  background: var(--background-secondary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.modeCard:active {
+  border-color: var(--button-primary);
+}
+
+.modeHead {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-2);
+}
+
+.modeIcon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  background: var(--background-tertiary);
+  color: var(--text-themed);
+  flex-shrink: 0;
+}
+
+.modeCardAccent .modeIcon {
+  background: var(--button-primary);
+  color: #fff;
+}
+
+.modeTitle {
+  color: var(--text-primary);
+}
+
+.modeText {
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.goal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-1);
+  margin-bottom: var(--gap-3);
+}
+
+.goalLabel {
+  color: var(--text-tertiary);
+}
+
+.goalText {
+  color: var(--text-primary);
+  line-height: 1.5;
+}

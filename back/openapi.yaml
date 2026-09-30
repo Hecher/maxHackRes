@@ -1,0 +1,1362 @@
+openapi: 3.1.0
+info:
+  title: VLR Backend
+  version: 0.1.0
+paths:
+  /api/v1/labs/{lab_id}/guide:
+    get:
+      tags:
+        - Лабораторные работы
+      summary: Методичка файлом
+      description: "Отдаёт приложенный файл методички.\n\nФайл открывается обычной ссылкой, поэтому токен принимается и в\nзаголовке, и в параметре — иначе в WebView MAX скачивание не работает."
+      operationId: lab_guide_api_v1_labs__lab_id__guide_get
+      parameters:
+        - name: lab_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Lab Id
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /api/v1/labs/:
+    get:
+      tags:
+        - Лабораторные работы
+      summary: Get Labs
+      operationId: get_labs_api_v1_labs__get
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/LabResponse"
+                type: array
+                title: Response Get Labs Api V1 Labs  Get
+      security:
+        - HTTPBearer: []
+    post:
+      tags:
+        - Лабораторные работы
+      summary: Create Lab
+      operationId: create_lab_api_v1_labs__post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LabCreate"
+        required: true
+      responses:
+        201:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LabResponse"
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+      security:
+        - HTTPBearer: []
+  /api/v1/labs/{lab_id}:
+    get:
+      tags:
+        - Лабораторные работы
+      summary: Get Lab
+      operationId: get_lab_api_v1_labs__lab_id__get
+      security:
+        - HTTPBearer: []
+      parameters:
+        - name: lab_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Lab Id
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LabResponse"
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+    patch:
+      tags:
+        - Лабораторные работы
+      summary: Update Lab
+      operationId: update_lab_api_v1_labs__lab_id__patch
+      security:
+        - HTTPBearer: []
+      parameters:
+        - name: lab_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Lab Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LabUpdate"
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LabResponse"
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /api/v1/labs/{lab_id}/assign:
+    post:
+      tags:
+        - Лабораторные работы
+      summary: Выдать работу классам
+      operationId: assign_lab_api_v1_labs__lab_id__assign_post
+      security:
+        - HTTPBearer: []
+      parameters:
+        - name: lab_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Lab Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignRequest"
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LabResponse"
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /api/v1/auth/:
+    post:
+      tags:
+        - Аутентификация
+      summary: Authenticate User
+      operationId: authenticate_user_api_v1_auth__post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRequest"
+        required: true
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /api/v1/auth/me:
+    patch:
+      tags:
+        - Аутентификация
+      summary: Обновить профиль
+      operationId: update_profile_api_v1_auth_me_patch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+        required: true
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+      security:
+        - HTTPBearer: []
+  /api/v1/auth/dev-login:
+    post:
+      tags:
+        - Аутентификация
+      summary: Логин для разработчика (Без проверки подписи)
+      operationId: dev_authenticate_api_v1_auth_dev_login_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DevAuthRequest"
+        required: true
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /api/v1/attempts/:
+    get:
+      tags:
+        - Попытки
+      summary: Список попыток
+      operationId: list_attempts_api_v1_attempts__get
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/AttemptListItem"
+                type: array
+                title: Response List Attempts Api V1 Attempts  Get
+      security:
+        - HTTPBearer: []
+    post:
+      tags:
+        - Попытки
+      summary: Начать выполнение лабы
+      operationId: create_attempt_api_v1_attempts__post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AttemptCreate"
+        required: true
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttemptResponse"
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+      security:
+        - HTTPBearer: []
+  /api/v1/attempts/{attempt_id}/finish:
+    post:
+      tags:
+        - Попытки
+      summary: Завершить попытку
+      operationId: finish_attempt_api_v1_attempts__attempt_id__finish_post
+      security:
+        - HTTPBearer: []
+      parameters:
+        - name: attempt_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Attempt Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AttemptFinishRequest"
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttemptResponse"
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /api/v1/attempts/{attempt_id}/review:
+    post:
+      tags:
+        - Попытки
+      summary: Проверить работу (учитель)
+      operationId: review_attempt_api_v1_attempts__attempt_id__review_post
+      security:
+        - HTTPBearer: []
+      parameters:
+        - name: attempt_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Attempt Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AttemptReviewRequest"
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttemptResponse"
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /api/v1/attempts/{attempt_id}:
+    delete:
+      tags:
+        - Попытки
+      summary: Удалить попытку
+      operationId: delete_attempt_api_v1_attempts__attempt_id__delete
+      security:
+        - HTTPBearer: []
+      parameters:
+        - name: attempt_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Attempt Id
+      responses:
+        204:
+          description: Successful Response
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /api/v1/links/:
+    get:
+      tags:
+        - Связи учитель — ученик
+      summary: Мои связанные ученики
+      operationId: list_links_api_v1_links__get
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/LinkResponse"
+                type: array
+                title: Response List Links Api V1 Links  Get
+      security:
+        - HTTPBearer: []
+    post:
+      tags:
+        - Связи учитель — ученик
+      summary: Связать ученика с учителем
+      operationId: create_link_api_v1_links__post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LinkCreate"
+        required: true
+      responses:
+        201:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LinkResponse"
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+      security:
+        - HTTPBearer: []
+  /api/v1/classrooms/:
+    get:
+      tags:
+        - Классы
+      summary: Классы учителя
+      operationId: list_classrooms_api_v1_classrooms__get
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/ClassroomResponse"
+                type: array
+                title: Response List Classrooms Api V1 Classrooms  Get
+      security:
+        - HTTPBearer: []
+    post:
+      tags:
+        - Классы
+      summary: Создать класс
+      operationId: create_classroom_api_v1_classrooms__post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClassroomCreate"
+        required: true
+      responses:
+        201:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClassroomResponse"
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+      security:
+        - HTTPBearer: []
+  /api/v1/classrooms/advance-year:
+    post:
+      tags:
+        - Классы
+      summary: Перевести всех на следующий год
+      operationId: advance_year_api_v1_classrooms_advance_year_post
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/ClassroomResponse"
+                type: array
+                title: Response Advance Year Api V1 Classrooms Advance Year Post
+      security:
+        - HTTPBearer: []
+  /api/v1/components/:
+    get:
+      tags:
+        - Компоненты
+      summary: Мои составные компоненты
+      operationId: list_components_api_v1_components__get
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/ComponentResponse"
+                type: array
+                title: Response List Components Api V1 Components  Get
+      security:
+        - HTTPBearer: []
+    post:
+      tags:
+        - Компоненты
+      summary: Сохранить схему как компонент
+      operationId: create_component_api_v1_components__post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComponentCreate"
+        required: true
+      responses:
+        201:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComponentResponse"
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+      security:
+        - HTTPBearer: []
+  /api/v1/components/{component_id}:
+    delete:
+      tags:
+        - Компоненты
+      summary: Удалить компонент
+      operationId: delete_component_api_v1_components__component_id__delete
+      security:
+        - HTTPBearer: []
+      parameters:
+        - name: component_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Component Id
+      responses:
+        204:
+          description: Successful Response
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /api/v1/attempts/{attempt_id}/export.xls:
+    get:
+      tags:
+        - Экспорт
+      summary: Журнал замеров файлом Excel
+      operationId: export_attempt_api_v1_attempts__attempt_id__export_xls_get
+      parameters:
+        - name: attempt_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Attempt Id
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /healthz:
+    get:
+      tags:
+        - Служебные
+      summary: Готовность API и базы
+      description: "Проверка, которая действительно трогает базу.\n\n/openapi.json схему не читает и отвечает даже на пустой базе, поэтому для\nhealthcheck и ожидания готовности в CI нужен этот метод."
+      operationId: healthz_healthz_get
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Healthz Healthz Get
+components:
+  schemas:
+    AssignRequest:
+      properties:
+        classroom_ids:
+          items:
+            type: integer
+          type: array
+          title: Classroom Ids
+      type: object
+      title: AssignRequest
+    AttemptCreate:
+      properties:
+        lab_id:
+          type: integer
+          title: Lab Id
+        mode:
+          type: string
+          enum:
+            - test
+            - work
+          title: Mode
+      type: object
+      required:
+        - lab_id
+        - mode
+      title: AttemptCreate
+    AttemptFinishRequest:
+      properties:
+        grade:
+          anyOf:
+            - type: integer
+            - type: null
+          title: Grade
+        result_data:
+          anyOf:
+            - $ref: "#/components/schemas/AttemptResultData"
+            - type: null
+        comment:
+          anyOf:
+            - type: string
+            - type: null
+          title: Comment
+      type: object
+      title: AttemptFinishRequest
+    AttemptListItem:
+      properties:
+        id:
+          type: integer
+          title: Id
+        student_id:
+          type: integer
+          title: Student Id
+        lab_id:
+          type: integer
+          title: Lab Id
+        mode:
+          type: string
+          title: Mode
+        status:
+          type: string
+          title: Status
+        result_data:
+          anyOf:
+            - $ref: "#/components/schemas/AttemptResultData"
+            - additionalProperties: true
+              type: object
+            - type: null
+          title: Result Data
+        grade:
+          anyOf:
+            - type: integer
+            - type: null
+          title: Grade
+        comment:
+          anyOf:
+            - type: string
+            - type: null
+          title: Comment
+        started_at:
+          type: string
+          format: "date-time"
+          title: Started At
+        finished_at:
+          anyOf:
+            - type: string
+              format: "date-time"
+            - type: null
+          title: Finished At
+        lab_title:
+          type: string
+          title: Lab Title
+        student_name:
+          type: string
+          title: Student Name
+        class_number:
+          anyOf:
+            - type: integer
+            - type: null
+          title: Class Number
+      type: object
+      required:
+        - id
+        - student_id
+        - lab_id
+        - mode
+        - status
+        - started_at
+        - lab_title
+        - student_name
+      title: AttemptListItem
+    AttemptResponse:
+      properties:
+        id:
+          type: integer
+          title: Id
+        student_id:
+          type: integer
+          title: Student Id
+        lab_id:
+          type: integer
+          title: Lab Id
+        mode:
+          type: string
+          title: Mode
+        status:
+          type: string
+          title: Status
+        result_data:
+          anyOf:
+            - $ref: "#/components/schemas/AttemptResultData"
+            - additionalProperties: true
+              type: object
+            - type: null
+          title: Result Data
+        grade:
+          anyOf:
+            - type: integer
+            - type: null
+          title: Grade
+        comment:
+          anyOf:
+            - type: string
+            - type: null
+          title: Comment
+        started_at:
+          type: string
+          format: "date-time"
+          title: Started At
+        finished_at:
+          anyOf:
+            - type: string
+              format: "date-time"
+            - type: null
+          title: Finished At
+      type: object
+      required:
+        - id
+        - student_id
+        - lab_id
+        - mode
+        - status
+        - started_at
+      title: AttemptResponse
+    AttemptResultData:
+      properties:
+        measurements:
+          items:
+            $ref: "#/components/schemas/Measurement"
+          type: array
+          title: Measurements
+        answers:
+          additionalProperties: true
+          type: object
+          title: Answers
+        client_metrics:
+          additionalProperties: true
+          type: object
+          title: Client Metrics
+      type: object
+      title: AttemptResultData
+    AttemptReviewRequest:
+      properties:
+        grade:
+          anyOf:
+            - type: integer
+            - type: null
+          title: Grade
+        comment:
+          anyOf:
+            - type: string
+            - type: null
+          title: Comment
+      type: object
+      title: AttemptReviewRequest
+    AuthRequest:
+      properties:
+        initData:
+          type: string
+          title: Initdata
+        role:
+          type: string
+          enum:
+            - student
+            - teacher
+          title: Role
+          default: student
+      type: object
+      required:
+        - initData
+      title: AuthRequest
+    ClassroomCreate:
+      properties:
+        school:
+          anyOf:
+            - type: string
+            - type: null
+          title: School
+        grade:
+          type: integer
+          title: Grade
+      type: object
+      required:
+        - grade
+      title: ClassroomCreate
+    ClassroomResponse:
+      properties:
+        id:
+          type: integer
+          title: Id
+        school:
+          type: string
+          title: School
+        grade:
+          type: integer
+          title: Grade
+        label:
+          type: string
+          title: Label
+        students_count:
+          type: integer
+          title: Students Count
+          default: 0
+      type: object
+      required:
+        - id
+        - school
+        - grade
+        - label
+      title: ClassroomResponse
+    ComponentCreate:
+      properties:
+        name:
+          type: string
+          title: Name
+        graph:
+          additionalProperties: true
+          type: object
+          title: Graph
+      type: object
+      required:
+        - name
+        - graph
+      title: ComponentCreate
+    ComponentResponse:
+      properties:
+        id:
+          type: integer
+          title: Id
+        name:
+          type: string
+          title: Name
+        graph:
+          additionalProperties: true
+          type: object
+          title: Graph
+        created_at:
+          type: string
+          format: "date-time"
+          title: Created At
+      type: object
+      required:
+        - id
+        - name
+        - graph
+        - created_at
+      title: ComponentResponse
+    DevAuthRequest:
+      properties:
+        max_user_id:
+          type: integer
+          title: Max User Id
+          default: 123456789
+        role:
+          type: string
+          title: Role
+          default: teacher
+      type: object
+      title: DevAuthRequest
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: "#/components/schemas/ValidationError"
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    LabCreate:
+      properties:
+        title:
+          type: string
+          title: Title
+        subject:
+          anyOf:
+            - type: string
+            - type: null
+          title: Subject
+        summary:
+          anyOf:
+            - type: string
+            - type: null
+          title: Summary
+        goal:
+          anyOf:
+            - type: string
+            - type: null
+          title: Goal
+        guide:
+          anyOf:
+            - type: string
+            - type: null
+          title: Guide
+        guide_file:
+          anyOf:
+            - type: string
+            - type: null
+          title: Guide File
+        guide_file_name:
+          anyOf:
+            - type: string
+            - type: null
+          title: Guide File Name
+        visibility:
+          type: string
+          enum:
+            - public
+            - private
+          title: Visibility
+          default: private
+        math_model:
+          additionalProperties: true
+          type: object
+          title: Math Model
+        scene:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: null
+          title: Scene
+        journal_columns:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Journal Columns
+        assigned_class_ids:
+          items:
+            type: string
+          type: array
+          title: Assigned Class Ids
+        noise_percent:
+          anyOf:
+            - type: number
+            - type: null
+          title: Noise Percent
+        max_rows:
+          anyOf:
+            - type: integer
+            - type: null
+          title: Max Rows
+        is_published:
+          type: boolean
+          title: Is Published
+          default: false
+      type: object
+      required:
+        - title
+        - math_model
+      title: LabCreate
+    LabResponse:
+      properties:
+        title:
+          type: string
+          title: Title
+        subject:
+          anyOf:
+            - type: string
+            - type: null
+          title: Subject
+        summary:
+          anyOf:
+            - type: string
+            - type: null
+          title: Summary
+        goal:
+          anyOf:
+            - type: string
+            - type: null
+          title: Goal
+        guide:
+          anyOf:
+            - type: string
+            - type: null
+          title: Guide
+        guide_file:
+          anyOf:
+            - type: string
+            - type: null
+          title: Guide File
+        guide_file_name:
+          anyOf:
+            - type: string
+            - type: null
+          title: Guide File Name
+        visibility:
+          type: string
+          enum:
+            - public
+            - private
+          title: Visibility
+          default: private
+        math_model:
+          additionalProperties: true
+          type: object
+          title: Math Model
+        scene:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: null
+          title: Scene
+        journal_columns:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Journal Columns
+        assigned_class_ids:
+          items:
+            type: string
+          type: array
+          title: Assigned Class Ids
+        noise_percent:
+          anyOf:
+            - type: number
+            - type: null
+          title: Noise Percent
+        max_rows:
+          anyOf:
+            - type: integer
+            - type: null
+          title: Max Rows
+        is_published:
+          type: boolean
+          title: Is Published
+          default: false
+        id:
+          type: integer
+          title: Id
+        author_id:
+          type: integer
+          title: Author Id
+        created_at:
+          type: string
+          format: "date-time"
+          title: Created At
+        author_name:
+          anyOf:
+            - type: string
+            - type: null
+          title: Author Name
+      type: object
+      required:
+        - title
+        - math_model
+        - id
+        - author_id
+        - created_at
+      title: LabResponse
+    LabUpdate:
+      properties:
+        title:
+          anyOf:
+            - type: string
+            - type: null
+          title: Title
+        subject:
+          anyOf:
+            - type: string
+            - type: null
+          title: Subject
+        summary:
+          anyOf:
+            - type: string
+            - type: null
+          title: Summary
+        goal:
+          anyOf:
+            - type: string
+            - type: null
+          title: Goal
+        guide:
+          anyOf:
+            - type: string
+            - type: null
+          title: Guide
+        guide_file:
+          anyOf:
+            - type: string
+            - type: null
+          title: Guide File
+        guide_file_name:
+          anyOf:
+            - type: string
+            - type: null
+          title: Guide File Name
+        visibility:
+          anyOf:
+            - type: string
+              enum:
+                - public
+                - private
+            - type: null
+          title: Visibility
+        math_model:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: null
+          title: Math Model
+        scene:
+          anyOf:
+            - additionalProperties: true
+              type: object
+            - type: null
+          title: Scene
+        journal_columns:
+          anyOf:
+            - items:
+                additionalProperties: true
+                type: object
+              type: array
+            - type: null
+          title: Journal Columns
+        assigned_class_ids:
+          anyOf:
+            - items:
+                type: string
+              type: array
+            - type: null
+          title: Assigned Class Ids
+        noise_percent:
+          anyOf:
+            - type: number
+            - type: null
+          title: Noise Percent
+        max_rows:
+          anyOf:
+            - type: integer
+            - type: null
+          title: Max Rows
+        is_published:
+          anyOf:
+            - type: boolean
+            - type: null
+          title: Is Published
+      type: object
+      title: LabUpdate
+    LinkCreate:
+      properties:
+        student_max_user_id:
+          type: integer
+          title: Student Max User Id
+      type: object
+      required:
+        - student_max_user_id
+      title: LinkCreate
+    LinkResponse:
+      properties:
+        student_id:
+          type: integer
+          title: Student Id
+        max_user_id:
+          type: integer
+          title: Max User Id
+        full_name:
+          type: string
+          title: Full Name
+        class_number:
+          anyOf:
+            - type: integer
+            - type: null
+          title: Class Number
+        school:
+          anyOf:
+            - type: string
+            - type: null
+          title: School
+      type: object
+      required:
+        - student_id
+        - max_user_id
+        - full_name
+      title: LinkResponse
+    Measurement:
+      properties:
+        step:
+          type: integer
+          title: Step
+        inputs:
+          additionalProperties:
+            type: number
+          type: object
+          title: Inputs
+        outputs:
+          additionalProperties:
+            type: number
+          type: object
+          title: Outputs
+      type: object
+      required:
+        - step
+        - inputs
+        - outputs
+      title: Measurement
+    ProfileUpdate:
+      properties:
+        full_name:
+          anyOf:
+            - type: string
+            - type: null
+          title: Full Name
+        city:
+          anyOf:
+            - type: string
+            - type: null
+          title: City
+        school:
+          anyOf:
+            - type: string
+            - type: null
+          title: School
+        class_number:
+          anyOf:
+            - type: integer
+            - type: null
+          title: Class Number
+        subject:
+          anyOf:
+            - type: string
+            - type: null
+          title: Subject
+      type: object
+      title: ProfileUpdate
+    TokenResponse:
+      properties:
+        access_token:
+          type: string
+          title: Access Token
+        token_type:
+          type: string
+          title: Token Type
+          default: bearer
+        is_new_user:
+          type: boolean
+          title: Is New User
+        user:
+          $ref: "#/components/schemas/UserResponse"
+      type: object
+      required:
+        - access_token
+        - is_new_user
+        - user
+      title: TokenResponse
+    UserResponse:
+      properties:
+        max_user_id:
+          type: integer
+          title: Max User Id
+        full_name:
+          type: string
+          title: Full Name
+        role:
+          type: string
+          enum:
+            - student
+            - teacher
+          title: Role
+        city:
+          anyOf:
+            - type: string
+            - type: null
+          title: City
+        school:
+          anyOf:
+            - type: string
+            - type: null
+          title: School
+        class_number:
+          anyOf:
+            - type: integer
+            - type: null
+          title: Class Number
+        subject:
+          anyOf:
+            - type: string
+            - type: null
+          title: Subject
+        id:
+          type: integer
+          title: Id
+        created_at:
+          type: string
+          format: "date-time"
+          title: Created At
+      type: object
+      required:
+        - max_user_id
+        - full_name
+        - role
+        - id
+        - created_at
+      title: UserResponse
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+        - loc
+        - msg
+        - type
+      title: ValidationError
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

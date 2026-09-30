@@ -1,0 +1,40 @@
+node_modules
+dist
+dist-ssr
+*.local
+.env
+.env.*
+!.env.example
+
+# СЂРµРґР°РєС‚РѕСЂС‹ / РћРЎ
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
+
+# Р»РѕРіРё
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# РёСЃС…РѕРґРЅРёРєРё Р·Р°РґР°РЅРёСЏ (РЅРµ С‡Р°СЃС‚СЊ СЂРµС€РµРЅРёСЏ)
+*.pdf.txt
+info.txt
+db.png
+*.pdf
+*.jpg
+*.jpeg
+
+# Р°СЂС‚РµС„Р°РєС‚С‹ smoke-С‚РµСЃС‚Р°
+.smoke/
+.smoke-profile/
+
+# рабочие материалы, не нужные приложению
+not_git/
+.smoke-downloads/
+
+# документация и рабочие материалы — не часть приложения
+*.md

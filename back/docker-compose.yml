@@ -1,0 +1,54 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: vlr_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: vlr_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d vlr_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  migrations:
+    image: ghcr.io/kukymbr/goose-docker:3.24.1
+    container_name: vlr_migrations
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./src/database/migrations/migrations:/migrations
+    environment:
+      GOOSE_DRIVER: postgres
+      GOOSE_DBSTRING: postgres://postgres:postgres@db:5432/vlr_db?sslmode=disable
+      GOOSE_MIGRATION_DIR: /migrations
+      GOOSE_COMMAND: up
+
+  api:
+    build: .
+    container_name: vlr_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    depends_on:
+      # Бэкенд будет ждать полного завершения накатывания таблиц
+      migrations:
+        condition: service_completed_successfully
+    # Подключаем твой локальный .env файл к контейнеру
+    env_file:
+      - .env
+    environment:
+      # ПЕРЕОПРЕДЕЛЯЕМ настройки для работы внутри сети Docker:
+      # Контейнеры общаются по именам сервисов и стандартным портам
+      - POSTGRES_SERVER=db
+      - POSTGRES_PORT=5432
+
+volumes:
+  pgdata:
